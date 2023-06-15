@@ -1,0 +1,9 @@
+services:
+  git-vain:
+    container_name: git-vain
+
+    build:
+      context: .
+
+    env_file:
+      - .env
