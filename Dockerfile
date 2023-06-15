@@ -8,7 +8,7 @@ RUN apt -y update && apt -y install make build-essential python3.10 python3.10-v
 COPY Makefile .
 COPY requirements.txt .
 COPY setup.py .
-COPY src/ .
+COPY src/ src/
 
 RUN make setup build
 
