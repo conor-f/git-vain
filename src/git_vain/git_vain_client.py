@@ -2,6 +2,8 @@ import os
 
 from github import Github
 
+from git_vain.config_helper import Config
+
 
 class GitVainClient():
     """
@@ -12,7 +14,7 @@ class GitVainClient():
         self.client = self.get_client()
 
     def get_client(self):
-        return Github(os.environ.get("PYGITHUB_TOKEN", None))
+        return Github(Config().get("PYGITHUB_TOKEN", None))
 
     def get_stargazers(self, repo_name):
         # TODO: Is a paginated list. See if this affects things.

@@ -5,6 +5,7 @@ import sched
 import sys
 import time
 
+from git_vain.config_helper import Config
 from git_vain.git_vain_client import GitVainClient
 
 
@@ -13,11 +14,15 @@ logger = logging.getLogger("git-vain")
 logger.addHandler(logging.StreamHandler(sys.stdout))
 logger.setLevel(logging.DEBUG)
 
+
 def get_repos():
     logger.info("Getting repos...")
-    return [
-        "conor-f/git-vain"
-    ]
+    return Config().get(
+        "repos",
+        [
+            "conor-f/git-vain"
+        ]
+    )
 
 def get_change_in_stargazers(repo, stargazers):
     logger.info(f"Calculating change in stargzers for {repo}")
@@ -29,7 +34,7 @@ def format_message(details):
 def send_update(details):
     logger.info("Sending update!")
     requests.post(
-        os.environ.get(
+        Config().get(
             "GITVAIN_NTFY_ENDPOINT",
             "https://ntfy.sh/gitvain"
         ),
@@ -43,7 +48,7 @@ def send_updates(updates_list):
 def get_updates(scheduler):
     logger.info("Beginning to get updates...")
     scheduler.enter(
-        os.environ.get("GITVAIN_UPDATE_DELAY", 60),
+        Config().get("GITVAIN_UPDATE_DELAY", 60),
         1,
         get_updates,
         (scheduler,)
