@@ -60,7 +60,12 @@ def update_stargazers(repo_name, stargazers):
         shelf["previous_stargazers"][repo_name] = set(stargazers)
 
 def format_message(details):
-    return f"""Git Vain Updates for {details["repo_name"]}: {details["stargazers_diff"]}"""
+    message = ""
+
+    for change in details["stargazers_diff"]:
+        message += f"""{change["details"].login} just {change["direction"]} {details["repo_name"]}\n"""
+
+    return message
 
 def send_update(details):
     logger.info("Sending update!")
@@ -100,6 +105,8 @@ def get_updates(scheduler):
                 "repo_name": repo_name,
                 "stargazers_diff": stargazers_diff
             })
+        else:
+            logger.info("No change in stargazers")
 
     # TODO: Check if it's the first run and if so give some sort of
     # notification to show it's working.
