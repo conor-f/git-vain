@@ -8,7 +8,7 @@ INSTALL_REQUIRES = (
 
 setup(
     name='git_vain',
-    version='0.0.1',
+    version='0.0.2',
     python_requires='>=3.6',
     description='',
     long_description='',
@@ -19,7 +19,8 @@ setup(
     install_requires=INSTALL_REQUIRES,
     entry_points={
         'console_scripts': [
-            'git-vain = git_vain.bin.git_vain:main'
+            'git-vain = git_vain.bin.git_vain:main',
+            'star-repo = git_vain.bin.star_repo:main'
         ]
     }
 )
