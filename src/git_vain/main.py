@@ -1,22 +1,33 @@
+import logging
 import os
 import requests
 import sched
+import sys
 import time
 
 from git_vain.git_vain_client import GitVainClient
 
+
+# TODO: Set up logging better.
+logger = logging.getLogger("git-vain")
+logger.addHandler(logging.StreamHandler(sys.stdout))
+logger.setLevel(logging.DEBUG)
+
 def get_repos():
+    logger.info("Getting repos...")
     return [
         "conor-f/git-vain"
     ]
 
 def get_change_in_stargazers(repo, stargazers):
+    logger.info(f"Calculating change in stargzers for {repo}")
     return stargazers[-1] if stargazers else []
 
 def format_message(details):
     return f"""Git Vain Updates for {details["repo_name"]}: {details["stargazers_diff"]}"""
 
 def send_update(details):
+    logger.info("Sending update!")
     requests.post(
         os.environ.get(
             "GITVAIN_NTFY_ENDPOINT",
@@ -30,6 +41,7 @@ def send_updates(updates_list):
         send_update(update)
 
 def get_updates(scheduler):
+    logger.info("Beginning to get updates...")
     scheduler.enter(
         os.environ.get("GITVAIN_UPDATE_DELAY", 60),
         1,
@@ -56,9 +68,8 @@ def get_updates(scheduler):
     send_updates(updates)
 
 def entrypoint():
-    # TODO: Use actual logging.
-    print("git_vain running!")
+    logger.info("git_vain running!")
 
     scheduler = sched.scheduler(time.time, time.sleep)
-    scheduler.enter(60, 1, get_updates, (scheduler,))
+    get_updates(scheduler)
     scheduler.run()
