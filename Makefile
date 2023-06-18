@@ -22,7 +22,7 @@ test_requirements:
 	$(IN_ENV) python -m pip install --upgrade -r test_requirements.txt
 
 star_repo:
-	$(IN_ENV) star-repo --star conor-f/spotibar
+	$(IN_ENV) star-repo --star conor-f/git-vain
 
 unstar_repo:
-	$(IN_ENV) star-repo --unstar conor-f/spotibar
+	$(IN_ENV) star-repo --unstar conor-f/git-vain
