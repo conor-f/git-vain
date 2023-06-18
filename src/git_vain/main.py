@@ -2,6 +2,7 @@ import logging
 import os
 import requests
 import sched
+import shelve
 import sys
 import time
 
@@ -15,16 +16,56 @@ logger.setLevel(logging.DEBUG)
 
 def get_repos():
     logger.info("Getting repos...")
-    return [
-        "conor-f/git-vain"
-    ]
+    locations = os.environ.get("GITVAIN_WATCHED_LOCATIONS", None)
 
-def get_change_in_stargazers(repo, stargazers):
-    logger.info(f"Calculating change in stargzers for {repo}")
-    return stargazers[-1] if stargazers else []
+    return locations.split(",") if locations else []
+
+def get_previous_stargazers(repo_name):
+    with shelve.open(
+        os.environ.get("GITVAIN_SHELF_PATH", "./gitvain_shelf")
+    ) as shelf:
+        return shelf.get("previous_stargazers", {}).get(repo_name, set())
+
+def get_change_in_stargazers(repo_name, stargazers):
+    logger.info(f"Calculating change in stargzers for {repo_name}")
+
+    previous_stargazers = get_previous_stargazers(repo_name)
+    stargazers = set(stargazers)
+    diff = stargazers.symmetric_difference(previous_stargazers)
+
+    result = []
+    for stargazer in diff:
+        if stargazer in stargazers:
+            change = "starred"
+        else:
+            change = "unstarred"
+
+        result.append({
+            "direction": change,
+            "details": stargazer
+        })
+
+    return result
+
+def update_stargazers(repo_name, stargazers):
+    logger.info(f"Updating stargzers for repo {repo_name}")
+
+    with shelve.open(
+        os.environ.get("GITVAIN_SHELF_PATH", "./gitvain_shelf"),
+        writeback=True
+    ) as shelf:
+        if "previous_stargazers" not in shelf:
+            shelf["previous_stargazers"] = dict()
+
+        shelf["previous_stargazers"][repo_name] = set(stargazers)
 
 def format_message(details):
-    return f"""Git Vain Updates for {details["repo_name"]}: {details["stargazers_diff"]}"""
+    message = ""
+
+    for change in details["stargazers_diff"]:
+        message += f"""{change["details"].login} just {change["direction"]} {details["repo_name"]}\n"""
+
+    return message
 
 def send_update(details):
     logger.info("Sending update!")
@@ -43,7 +84,7 @@ def send_updates(updates_list):
 def get_updates(scheduler):
     logger.info("Beginning to get updates...")
     scheduler.enter(
-        os.environ.get("GITVAIN_UPDATE_DELAY", 60),
+        int(os.environ.get("GITVAIN_UPDATE_DELAY", 60)),
         1,
         get_updates,
         (scheduler,)
@@ -57,11 +98,15 @@ def get_updates(scheduler):
         stargazers = client.get_stargazers(repo_name)
         stargazers_diff = get_change_in_stargazers(repo_name, stargazers)
 
-        if stargazers_diff is not None:
+        if stargazers_diff:
+            update_stargazers(repo_name, stargazers)
+
             updates.append({
                 "repo_name": repo_name,
                 "stargazers_diff": stargazers_diff
             })
+        else:
+            logger.info("No change in stargazers")
 
     # TODO: Check if it's the first run and if so give some sort of
     # notification to show it's working.
