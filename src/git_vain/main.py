@@ -6,6 +6,8 @@ import shelve
 import sys
 import time
 
+from apprise import Apprise
+
 from git_vain.git_vain_client import GitVainClient
 
 
@@ -65,16 +67,51 @@ def format_message(details):
     for change in details["stargazers_diff"]:
         message += f"""{change["details"].login} just {change["direction"]} {details["repo_name"]}\n"""
 
-    return message
+    # TODO: Format this nicer:
+    return details["repo_name"], message
+
+def get_notification_client():
+    """
+    Return a notification client configured with notifiers to send
+    notifications with.
+    """
+    notification_client = Apprise()
+
+    notification_config_file = os.environ.get(
+        "GITVAIN_NOTIFICATIONS_FILE",
+        None
+    )
+    notification_config_list = os.environ.get(
+        "GITVAIN_NOTIFICATIONS_LIST",
+        []
+    )
+
+    if notification_config_file:
+        print("Adding notification handlers from config file...")
+        notification_client.add(
+            apprise.AppriseConfig(notification_config_file)
+        )
+
+    for notification_config_element in notification_config_list.split(","):
+        print("Adding notification handler from notifications list...")
+        print(notification_config_element)
+
+        notification_client.add(notification_config_element)
+
+    # Just for testing:
+    notification_client.add("dbus://")
+
+    return notification_client
 
 def send_update(details):
     logger.info("Sending update!")
-    requests.post(
-        os.environ.get(
-            "GITVAIN_NTFY_ENDPOINT",
-            "https://ntfy.sh/gitvain"
-        ),
-        data=format_message(details)
+    notification_client = get_notification_client()
+
+    title, message = format_message(details)
+
+    notification_client.notify(
+        title=title,
+        body=message,
     )
 
 def send_updates(updates_list):
