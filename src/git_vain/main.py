@@ -24,6 +24,7 @@ def get_repos():
     """
     logger.info("Getting repos...")
     locations = os.environ.get("GITVAIN_WATCHED_LOCATIONS", None)
+    logger.info(f"Got repos: {locations}")
 
     return locations.split(",") if locations else []
 
