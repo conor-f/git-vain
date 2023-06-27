@@ -138,9 +138,11 @@ def get_updates(scheduler):
     updates = []
 
     for repo_name in get_repos():
+        logger.info(f"Getting updates for {repo_name}")
         stargazers = client.get_current_watchers(repo_name)
         stargazers_diff = get_change_in_stargazers(repo_name, stargazers)
 
+        logger.info("Got stargazers and diff succesfully")
         if stargazers_diff:
             update_stargazers(repo_name, stargazers)
 
