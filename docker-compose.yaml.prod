@@ -1,0 +1,39 @@
+version: '3.3'
+
+networks:
+  internal_network:
+    external: false
+
+services:
+  git-vain:
+    container_name: "git-vain"
+    image: conorjf/git-vain:latest
+    restart: unless-stopped
+
+    networks:
+      - "internal_network"
+
+    volumes:
+      - ./data/gitvain_shelf:/gitvain_shelf
+
+    env_file:
+      - ./config/git-vain.env
+
+    labels:
+      - "traefik.enable=false"
+      - "com.centurylinklabs.watchtower.scope=git-vain"
+
+  gitvain-watchtower:
+    container_name: "gitvain-watchtower"
+    image: containrrr/watchtower
+    restart: unless-stopped
+
+    volumes:
+      - /var/log/instance_logs/gitvain-watchtower:/var/log
+      - /var/run/docker.sock:/var/run/docker.sock
+
+    command: git-vain --interval 300 --scope git-vain
+
+    labels:
+      - "traefik.enable=false"
+      - "com.centurylinklabs.watchtower.scope=git-vain"
