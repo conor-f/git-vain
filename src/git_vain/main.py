@@ -17,6 +17,11 @@ logger.addHandler(logging.StreamHandler(sys.stdout))
 logger.setLevel(logging.DEBUG)
 
 def get_repos():
+    """
+    Returns a list of locations to watch. This should be named more generically
+    than repos as there can also be users passed. Eventually should support
+    gists too I guess.
+    """
     logger.info("Getting repos...")
     locations = os.environ.get("GITVAIN_WATCHED_LOCATIONS", None)
 
@@ -132,7 +137,7 @@ def get_updates(scheduler):
     updates = []
 
     for repo_name in get_repos():
-        stargazers = client.get_stargazers(repo_name)
+        stargazers = client.get_current_watchers(repo_name)
         stargazers_diff = get_change_in_stargazers(repo_name, stargazers)
 
         if stargazers_diff:

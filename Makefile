@@ -26,3 +26,9 @@ star_repo:
 
 unstar_repo:
 	$(IN_ENV) star-repo --unstar conor-f/git-vain
+
+follow_user:
+	$(IN_ENV) star-repo --follow-user lukeyb
+
+unfollow_user:
+	$(IN_ENV) star-repo --unfollow-user lukeyb
