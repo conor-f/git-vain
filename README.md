@@ -3,7 +3,7 @@
 &nbsp;
 # Git Vain Overview
 
-git-vain is a simple polling service that will notify you whenever a user or a repo has a change in followers. It does this using [Apprise](https://github.com/caronc/apprise) for many different notification channels and [PyGithub](https://github.com/PyGithub/PyGithub) to interact with Github. 
+git-vain is a simple polling service that will notify you whenever a user or a repo has a change in followers. It does this using [Apprise](https://github.com/caronc/apprise) for many different notification channels and [PyGithub](https://github.com/PyGithub/PyGithub) to interact with Github. Check out a complete buildlog [here](https://blog.randombits.host/git-vain/).
 
 ### Usage
 To run, you can take the `docker-compose.yaml.prod` file and modify it as needed to fit your `Caddy`, `Traefik`, or similar stack.
