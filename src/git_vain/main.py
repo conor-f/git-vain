@@ -16,6 +16,28 @@ logger = logging.getLogger("git-vain")
 logger.addHandler(logging.StreamHandler(sys.stdout))
 logger.setLevel(logging.DEBUG)
 
+def expand_wildcard_location(location: str) -> list:
+    return GitVainClient().get_repos(location.split("/")[0])
+
+def expand_wildcard_locations(locations: list) -> list:
+    """
+    Given a list of locations, potentially containing some with wildcards,
+    expand all wildcards into just a flat list of repos.
+
+    e.g. The user conor-f has 3 repos A, B and C. If the locations param is
+    ["conor-f/*"], the returned list should be ["conor-f/A", "conor-f/B",
+    "conor-f/C"]
+    """
+    expanded_locations = []
+
+    for location in locations:
+        if location[-1] == "*":
+            expanded_locations.extend(expand_wildcard_location(location))
+        else:
+            expanded_locations.append(location)
+
+    return expanded_locations
+
 def get_repos():
     """
     Returns a list of locations to watch. This should be named more generically
@@ -23,10 +45,16 @@ def get_repos():
     gists too I guess.
     """
     logger.info("Getting repos...")
+
     locations = os.environ.get("GITVAIN_WATCHED_LOCATIONS", None)
+    locations = locations.split(",") if locations else []
+
+    expanded_locations = expand_wildcard_locations(locations)
+
+    locations = list(set(expanded_locations))
     logger.info(f"Got repos: {locations}")
 
-    return locations.split(",") if locations else []
+    return locations
 
 def get_previous_stargazers(repo_name):
     with shelve.open(
