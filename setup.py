@@ -4,11 +4,14 @@ from setuptools import (
 )
 
 INSTALL_REQUIRES = (
+    "apprise",
+    "pygithub<=1.58.2",
+    "requests",
 )
 
 setup(
     name='git_vain',
-    version='1.0.0',
+    version='1.1.0',
     python_requires='>=3.6',
     description='',
     long_description='',

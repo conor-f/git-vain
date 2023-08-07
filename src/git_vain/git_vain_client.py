@@ -45,3 +45,9 @@ class GitVainClient():
             return self.get_stargazers(identifier)
         else:
             return self.get_followers(identifier)
+
+    def get_repos(self, user_name: str) -> list:
+        return [
+            repo.full_name
+            for repo in self.client.get_user(user_name).get_repos()
+        ]
